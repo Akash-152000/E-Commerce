@@ -1,4 +1,5 @@
 const Product = require("../models/productModel");
+const Errorhandler = require("../utils/errorHandler");
 
 // Create a Product - ADMIN
 
@@ -65,13 +66,11 @@ exports.deleteProduct = async (req, res, next) => {
 
 // Get product details
 exports.getProductDetails = async (req, res, next) => {
-  const product = await Product.findById(req.params.id);
+  const product = await Product.findOne({_id:req.params.id});
+
 
   if (!product) {
-    return res.status(500).json({
-      success: false,
-      message: "Product not found",
-    });
+    return next(new Errorhandler("Product Not Found", 404 ))
   }
 
   res.status(200).json({
