@@ -55,11 +55,27 @@ exports.deleteProduct = async (req, res, next) => {
     });
   }
 
-//   console.log(product);
-  await product.deleteOne({_id:req.params.id});          // remove() is deprecated
+  await product.deleteOne({ _id: req.params.id }); // remove() is deprecated
 
   res.status(200).json({
     success: true,
     message: `${product.name} has been deleted`,
+  });
+};
+
+// Get product details
+exports.getProductDetails = async (req, res, next) => {
+  const product = await Product.findById(req.params.id);
+
+  if (!product) {
+    return res.status(500).json({
+      success: false,
+      message: "Product not found",
+    });
+  }
+
+  res.status(200).json({
+    success: true,
+    product,
   });
 };
