@@ -1,16 +1,17 @@
 const Product = require("../models/productModel");
 const Errorhandler = require("../utils/errorHandler");
+const catchAsyncErrors = require("../middlewares/catchAsyncErrors");
 
 // Create a Product - ADMIN
 
-exports.createProduct = async (req, res, next) => {
+exports.createProduct = catchAsyncErrors(async (req, res, next) => {
   const product = await Product.create(req.body);
 
   res.status(201).json({
     success: true,
     product,
   });
-};
+});
 
 // Get all Products
 exports.getAllProducts = async (req, res, next) => {
@@ -27,10 +28,7 @@ exports.updateProduct = async (req, res, next) => {
   let product = await Product.findById(req.params.id);
 
   if (!product) {
-    return res.status(500).json({
-      success: false,
-      message: "Product not found",
-    });
+    return next(new Errorhandler("Product Not Found", 404));
   }
 
   product = await Product.findByIdAndUpdate(req.params.id, req.body, {
@@ -50,10 +48,7 @@ exports.deleteProduct = async (req, res, next) => {
   const product = await Product.findById(req.params.id);
 
   if (!product) {
-    return res.status(500).json({
-      success: false,
-      message: "Product not found",
-    });
+    return next(new Errorhandler("Product Not Found", 404));
   }
 
   await product.deleteOne({ _id: req.params.id }); // remove() is deprecated
@@ -66,11 +61,10 @@ exports.deleteProduct = async (req, res, next) => {
 
 // Get product details
 exports.getProductDetails = async (req, res, next) => {
-  const product = await Product.findOne({_id:req.params.id});
-
+  const product = await Product.findOne({ _id: req.params.id });
 
   if (!product) {
-    return next(new Errorhandler("Product Not Found", 404 ))
+    return next(new Errorhandler("Product Not Found", 404));
   }
 
   res.status(200).json({
