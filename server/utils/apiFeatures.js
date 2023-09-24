@@ -13,7 +13,6 @@ class ApiFeatures {
           },
         }
       : {};
-      console.log(keyword);
     this.query = this.query.find({ ...keyword });
     return this;
   }
@@ -25,8 +24,8 @@ class ApiFeatures {
     const removeFields = ["keyword","page","limit"]
 
     removeFields.forEach(key => delete queryCopy[key] );
-
     this.query = this.query.find(queryCopy);
+    // console.log(this.query);
     return this;
 
   }
