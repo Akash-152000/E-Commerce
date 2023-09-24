@@ -6,7 +6,7 @@ class ApiFeatures {
 
   search() {
     const keyword = this.queryStr.keyword
-      ? {   
+      ? {
           name: {
             $regex: this.queryStr.keyword, // whatever matches the query
             $options: "i", // case insensitive
@@ -17,17 +17,20 @@ class ApiFeatures {
     return this;
   }
 
-  filter(){
-    const queryCopy = {...this.queryStr}
+  filter() {
+    const queryCopy = { ...this.queryStr };
 
     // Removing some fields from query string
-    const removeFields = ["keyword","page","limit"]
+    const removeFields = ["keyword", "page", "limit"];
+    removeFields.forEach((key) => delete queryCopy[key]);
 
-    removeFields.forEach(key => delete queryCopy[key] );
-    this.query = this.query.find(queryCopy);
-    // console.log(this.query);
+    // Filter for Price and Rating
+    let queryStr = JSON.stringify(queryCopy); // as we want to put $ in front of gt we need to convert json to string
+
+    queryStr = queryStr.replace(/\b(gt|gte|lt|lte)\b/g, (key) => `$${key}`);
+
+    this.query = this.query.find(JSON.parse(queryStr));
     return this;
-
   }
 }
 
