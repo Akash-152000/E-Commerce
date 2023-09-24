@@ -23,6 +23,7 @@ exports.getAllProducts = catchAsyncErrors(async (req, res, next) => {
     .search()
     .filter().pagination(resultsPerPage);
   const products = await apiFeature.query;
+//   const products = await Product.find({category:"Shoes"});
   res.status(200).json({
     success: true,
     products,
