@@ -53,7 +53,7 @@ exports.getSingleOrder = catchAsyncErrors(async (req, res, next) => {
 
 // Get Logged in user order details
 exports.myOrders = catchAsyncErrors(async (req, res, next) => {
-  const orders = await Order.find({user:req.user._id})
+  const orders = await Order.find({ user: req.user._id });
 
   res.status(200).json({
     success: true,
@@ -61,4 +61,72 @@ exports.myOrders = catchAsyncErrors(async (req, res, next) => {
   });
 });
 
+// Get all orders
+exports.getAllOrders = catchAsyncErrors(async (req, res, next) => {
+  const orders = await Order.find();
 
+  let totalAmount = 0;
+
+  orders.forEach((order) => {
+    totalAmount += order.totalPrice;
+  });
+
+  res.status(200).json({
+    success: true,
+    totalAmount,
+    orders,
+  });
+});
+
+// Update order status --- Admin
+exports.updateOrder = catchAsyncErrors(async (req, res, next) => {
+  const order = await Order.findById(req.params.id);
+
+  if (!order) {
+    return next(new Errorhandler("Order not found with this id ", 404));
+  }
+
+  if (order.orderStatus === "Delivered") {
+    return next(new Errorhandler("You have already delivered this order", 400));
+  }
+
+  order.orderItems.forEach(async (order) => {
+    await updateStock(order.product, order.quantity);
+  });
+
+  order.orderStatus = req.body.status;
+
+  if (order.orderStatus === "Delivered") {
+    order.deliveredAt = Date.now();
+  }
+
+  await order.save({ validateBeforeSave: false });
+  res.status(200).json({
+    success: true,
+  });
+});
+
+// Delete order --- Admin
+exports.deleteOrder = catchAsyncErrors(async (req, res, next) => {
+  const order = await Order.findById(req.params.id);
+
+  if (!order) {
+    return next(new Errorhandler("Order not found with this id ", 404));
+  }
+
+  await order.deleteOne();
+
+  res.status(200).json({
+    success: true,
+  });
+});
+
+// Update stock function
+
+async function updateStock(id, quantity) {
+  const product = await Product.findById(id);
+
+  product.stock = product.stock - quantity;
+
+  await product.save({ validateBeforeSave: false });
+}
